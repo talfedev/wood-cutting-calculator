@@ -1,1 +1,0 @@
-# Wood cutting calculator
