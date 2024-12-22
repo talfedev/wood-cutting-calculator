@@ -12,7 +12,7 @@ export interface RemainingStock {
 }
 
 export interface CuttingOptions {
-    totalMaterialLeft: string;
+    totalMaterialLeft: number;
     remainingStock: RemainingStock[],
     cutMap: {
         [key: string]: number[];

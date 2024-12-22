@@ -81,7 +81,9 @@ function optimalCuts(stock, requiredPieces, bladeThickness = 3) {
 }
 */
 
-function optimalCuts(stock, requiredPieces, bladeThickness = 3) {
+import type { CuttingOptions, RemainingStock, Stock } from "../types/types";
+
+function optimalCuts(stock: Stock, requiredPieces: number[], bladeThickness = 3) {
     // Step 1: Prepare Inputs
     const { expandedStock, requiredPiecesSorted } = prepareInputs(stock, requiredPieces);
 
@@ -95,11 +97,11 @@ function optimalCuts(stock, requiredPieces, bladeThickness = 3) {
 // --- Utility and Helper Functions ---
 
 // 1. Prepare Inputs
-function prepareInputs(stock, requiredPieces) {
+function prepareInputs(stock: Stock, requiredPieces: number[]) {
     const { sizes, quantities } = stock;
 
     // Expand stock into individual pieces
-    const expandedStock = [];
+    const expandedStock: RemainingStock[] = [];
     sizes.forEach(size => {
         for (let i = 0; i < quantities[size]; i++) {
             expandedStock.push({ original: size, left: size, cuts: [] });
@@ -113,7 +115,7 @@ function prepareInputs(stock, requiredPieces) {
 }
 
 // 2. Apply a Cut
-function applyCut(stockPiece, pieceSize, bladeThickness) {
+function applyCut(stockPiece: RemainingStock, pieceSize: number, bladeThickness: number) {
     const newStockPiece = {
         original: stockPiece.original,
         left: stockPiece.left - (pieceSize + bladeThickness),
@@ -124,7 +126,7 @@ function applyCut(stockPiece, pieceSize, bladeThickness) {
 }
 
 // 3. Normalize Cuts on a Single Stock Piece
-function normalizeCuts(stockPieces) {
+function normalizeCuts(stockPieces: RemainingStock[]) {
     return stockPieces.map(piece => ({
         ...piece,
         cuts: piece.cuts.sort((a, b) => a - b), // Ensure cuts are in sorted order
@@ -132,8 +134,8 @@ function normalizeCuts(stockPieces) {
 }
 
 // 4. Normalize and Group Stock Pieces
-function normalizeStock(stockPieces) {
-    const grouped = {};
+function normalizeStock(stockPieces: RemainingStock[]) {
+    const grouped: {[key:string]: RemainingStock} = {};
     stockPieces.forEach(({ original, left, cuts }) => {
         const key = `${original}:${left}:${cuts.sort((a, b) => a - b).join(',')}`;
         grouped[key] = { original, left, cuts };
@@ -142,7 +144,7 @@ function normalizeStock(stockPieces) {
 }
 
 // 5. Deduplicate Results
-function deduplicateResults(results) {
+function deduplicateResults(results: CuttingOptions[]) {
     const uniqueResults = new Map();
     results.forEach(({ totalMaterialLeft, remainingStock, cutMap }) => {
         const normalizedStock = normalizeStock(remainingStock);
@@ -153,12 +155,12 @@ function deduplicateResults(results) {
 }
 
 // 6. Recursive Backtracking
-function backtrack(requiredPieces, stockPieces, bladeThickness, memo = new Map()) {
+function backtrack(requiredPieces: number[], stockPieces: RemainingStock[], bladeThickness: number, memo = new Map()): CuttingOptions[] {
     // Base case: no more pieces required
     if (requiredPieces.length === 0) {
         const remainingStock = normalizeCuts(stockPieces);
         const totalMaterialLeft = remainingStock.reduce((sum, piece) => sum + piece.left, 0);
-        const cutMap = remainingStock.reduce((map, piece, index) => {
+        const cutMap = remainingStock.reduce((map: {[key:string]:number[]}, piece, index) => {
             const key = `${piece.original}${index > 0 ? " #" + index : ""}`;
             map[key] = piece.cuts;
             return map;
@@ -171,7 +173,7 @@ function backtrack(requiredPieces, stockPieces, bladeThickness, memo = new Map()
     if (memo.has(memoKey)) return memo.get(memoKey);
 
     const [currentPiece, ...remainingPieces] = requiredPieces;
-    let solutions = [];
+    let solutions: CuttingOptions[] = [];
 
     stockPieces.forEach((stockPiece, index) => {
         if (stockPiece.left >= currentPiece) {
