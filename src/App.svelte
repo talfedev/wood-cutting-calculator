@@ -91,6 +91,7 @@
             <button onclick={() => removeStockPiece(size)} class="item-btn">X</button>
           </div>
           {/each}
+          <p>Total length: {stock.sizes.reduce((accumulator, size) => accumulator + size * stock.quantities[size], 0)}</p>
         </div>
       </div>
     </div>
@@ -111,6 +112,7 @@
               <button onclick={() => removePiece(piece)}  class="item-btn">X</button>
             </div>
           {/each}
+          <p>Total length: {pieces.reduce((accumulator, size) => accumulator + size, 0)}</p>
         </div>
       </div>
     </div>
